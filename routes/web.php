@@ -14,7 +14,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('livewire.index');
+});
+Route::get('/new-task', function () {
+    return view('livewire.new-todo')->layout('layout.app');
 });
 
 Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
