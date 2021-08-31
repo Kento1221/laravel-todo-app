@@ -4,10 +4,10 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 
-class NewTodo extends Component
+class GuestNavigationMenu extends Component
 {
     public function render()
     {
-        return view('livewire.new-todo');
+        return view('livewire.guest-navigation-menu');
     }
 }

@@ -13,13 +13,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('livewire.index');
-});
-Route::get('/new-task', function () {
-    return view('livewire.new-todo')->layout('layout.app');
-});
+Route::get('/', fn() => view('livewire.index'))->name('home');
 
-Route::middleware(['auth:sanctum', 'verified'])->get('/dashboard', function () {
-    return view('dashboard');
-})->name('dashboard');
+Route::get('/new-task', fn() => view('livewire.new-todo'));
+
+Route::group(['middleware' => ['auth:sanctum', 'verified']], function () {
+    Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
+});

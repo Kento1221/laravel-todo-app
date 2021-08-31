@@ -3,7 +3,10 @@
         <p class="flex-1 py-3 xl:px-3 text-lg md:text-2xl font-semibold xl:text-3xl">
             {{__('Your task lists')}} <span class="text-gray-400">{{ ' ('.$todoListCount.')'}}</span>
         </p>
-        <button wire:click="newTask" class="text-xs my-auto md:text-lg xl:text-base p-3 xl:px-3 xl:py-0 bg-green-300 hover:bg-green-400 rounded-full xl:h-10 xl:content-center">
+        @if(session('message'))
+            <p>{{session('message')}}</p>
+            @endif
+        <button wire:click="toggleModal" class="text-xs my-auto md:text-lg xl:text-base p-3 xl:px-3 xl:py-0 bg-green-300 hover:bg-green-400 rounded-full xl:h-10 xl:content-center">
                 <svg viewBox="0 0 20 20" class="w-6 h-6 inline-block">
                     <path fill="#006400" d="M16,10c0,0.553-0.048,1-0.601,1H11v4.399C11,15.951,10.553,16,10,16c-0.553,0-1-0.049-1-0.601V11H4.601
                                     C4.049,11,4,10.553,4,10c0-0.553,0.049-1,0.601-1H9V4.601C9,4.048,9.447,4,10,4c0.553,0,1,0.048,1,0.601V9h4.399
@@ -11,9 +14,8 @@
                 </svg>
                 {{__('Add new task')}}
         </button>
-
     </div>
-    <div class="flex flex-col xl:grid xl:grid-flow-col xl:grid-cols-3 xl:gap-5 xl:p-3">
+    <div class="flex flex-col xl:grid xl:grid-flow-row xl:grid-cols-3 xl:gap-5 xl:p-3">
         @foreach($todoList as $task)
             <div class="flex md:flex-col lg:flex-row xl:flex-col xl:flex-1 shadow-sm xl:rounded-lg xl:shadow-xl xl:bg-white">
                 <div class="flex flex-col w-3/4 md:w-full lg:w-4/5 xl:w-full gap-y-1 p-3 md:p-5  xl:h-48">
@@ -28,12 +30,39 @@
 
                 </div>
                 <div class="flex flex-col md:flex-row lg:h-12 lg:my-auto xl:mx-auto xl:w-full gap-y-3 md:gap-3 justify-center w-1/4 md:w-full lg:w-1/5 pr-2 md:px-3 md:pb-3">
-                    <button class="px-3 py-1 md:w-full rounded-full bg-blue-200 hover:bg-blue-300">{{__('Display')}}</button>
-                    <button class="px-3 py-1 md:w-full rounded-full bg-red-400 hover:bg-red-500">{{__('Delete')}}</button>
+                    <button wire:click="showTask({{$task}})" class="px-3 py-1 md:w-full rounded-full bg-blue-200 hover:bg-blue-300">{{__('Display')}}</button>
+                    <button wire:click="destroyTask({{$task}})" class="px-3 py-1 md:w-full rounded-full bg-red-400 hover:bg-red-500">{{__('Delete')}}</button>
                 </div>
             </div>
         @endforeach
         <div
             class="text-center text-gray-400 p-3 xl:hidden">{{$todoListCount > 0 ? ($todoListCount > 1 ? $todoListCount . ' '. __('task lists'): $todoListCount.' '. __('task list')): 'No task lists'}}</div>
     </div>
+
+    {{--The create new task modal--}}
+    <x-jet-dialog-modal wire:model="newTaskModal">
+        <x-slot name="title">{{__('Create new task')}}</x-slot>
+        <x-slot name="content">
+            <form action="">
+                <div class="mt-4">
+                    <x-jet-label for="title" value="{{ __('Title') }}" />
+                    <x-jet-input wire:model="newTask.title" id="title" class="block mt-1 w-full" type="text" name="title" required />
+                </div>
+                <div class="mt-4">
+                    <x-jet-label for="description" value="{{ __('Description') }}" />
+                    <x-jet-input wire:model="newTask.description" id="description" class="block mt-1 w-full" type="textarea" name="description" />
+                </div>
+            </form>
+        </x-slot>
+        <x-slot name="footer">
+            <x-jet-secondary-button wire:click="toggleModal" wire:loading.attr="disabled">
+                {{__('Cancel')}}
+            </x-jet-secondary-button>
+
+            <x-jet-button class="ml-2" wire:click="saveTask" wire:loading.attr="disabled">
+                {{__('Save')}}
+            </x-jet-button>
+        </x-slot>
+    </x-jet-dialog-modal>
+
 </div>
