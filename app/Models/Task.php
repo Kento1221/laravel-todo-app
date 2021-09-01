@@ -22,4 +22,9 @@ class Task extends Model
     {
         return $this->hasMany(TaskStep::class);
     }
+
+    public function status()
+    {
+        return $this->belongsTo(TaskStatus::class);
+    }
 }

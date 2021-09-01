@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class TaskStatus extends Model
 {
     use HasFactory;
+    protected $visible = ['status'];
 
     public function tasks()
     {
-        return $this->BelongsToMany(Task::class);
+        return $this->HasMany(Task::class);
     }
 }
