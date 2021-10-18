@@ -50,7 +50,7 @@ class TodoLists extends Component
 
     public function tabChanged($type = 'active')
     {
-        if (!in_array($type, ['all', 'deleted', 'active']))
+        if (!in_array($type, ['All', 'Deleted', 'Active', 'Finished', 'Prioritized', 'Expired', 'Started']))
             return;
 
         $this->activeTab = $type;
@@ -60,11 +60,17 @@ class TodoLists extends Component
     public function refreshTasks($type = 'active')
     {
         switch ($type) {
-            case 'deleted':
+            case 'Deleted':
                 $this->todoList = Task::onlyTrashed()->with('steps', 'status')->where('user_id', Auth::id())->orderBy('deleted_at', 'desc')->get()->toArray();
                 break;
-            case 'all':
+            case 'All':
                 $this->todoList = Task::withTrashed()->with('steps', 'status')->where('user_id', Auth::id())->get()->sortBy(['deleted_at', 'created_at'])->toArray();
+                break;
+            case 'Finished':
+            case 'Prioritized':
+            case 'Expired':
+            case 'Started':
+                $this->todoList = Task::with('steps', 'status')->where('user_id', Auth::id())->get()->where('status.status', $type)->sortBy(['deleted_at', 'created_at'])->toArray();
                 break;
             default:
                 $this->todoList = Auth::user()->tasks->load('steps', 'status')->toArray();
@@ -75,7 +81,7 @@ class TodoLists extends Component
 
     public function showTask($taskId)
     {
-        return view('livewire.showTask', Task::find($taskId)->first());
+        return route('showTask', ['task' =>Task::find($taskId)->first()]);
     }
 
     public function saveTask()

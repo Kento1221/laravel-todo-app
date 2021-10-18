@@ -13,4 +13,9 @@ class TaskStep extends Model
     {
         return $this->belongsTo(Task::class);
     }
+
+    public function status()
+    {
+        return $this->belongsTo(Status::class);
+    }
 }

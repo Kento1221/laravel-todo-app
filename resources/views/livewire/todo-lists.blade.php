@@ -14,7 +14,7 @@
             <div>
                 <p class="flex-1 font-bold" x-text="msg"/>
                 <p x-if="type === 'delete'" x-text="description"
-                   @click="$wire.emit('restoreTask', $wire.recentlyDeletedTaskId, activeTab)"
+                   @click="$wire.emit('restoreTask', $wire.recentlyDeletedTaskId, activeTab.type)"
                    class="text-sm text-blue-500 cursor-pointer"></p>
             </div>
         </div>
@@ -24,7 +24,7 @@
     </div>
     <div class="flex flex-row p-3 shadow-sm xl:bg-white">
         <p class="flex-1 py-3 xl:px-3 text-lg md:text-2xl font-semibold xl:text-3xl"
-           x-text="tabs[activeTab].title +' ('+ $wire.todoListCount+')'">
+           x-text="activeTab.title +' ('+ $wire.todoListCount+')'">
             {{__('Your task lists')}} <span class="text-gray-400">{{ ' ('.$todoListCount.')'}}</span>
         </p>
         <button wire:click="$toggle('newTaskModal')"
@@ -34,61 +34,78 @@
                                     C4.049,11,4,10.553,4,10c0-0.553,0.049-1,0.601-1H9V4.601C9,4.048,9.447,4,10,4c0.553,0,1,0.048,1,0.601V9h4.399
                                     C15.952,9,16,9.447,16,10z"/>
             </svg>
-            {{__('Add new task')}}
+            {{__('Add new task list')}}
         </button>
     </div>
-
     {{--Task tabs--}}
-    <div class="flex flex-row gap-3 p-3 shadow-sm">
-        <template x-for="tab in tabs" :key="tab.id">
-            <button x-text="tab.text" @click="activeTab = tab.type; $wire.emit('tabChanged', tab.type)"
-                    :class="{'text-blue-500': activeTab === tab.type}" class="px-3"></button>
-        </template>
-    </div>
+    <div class="flex flex-row items-center p-3 shadow-sm bg-gray-50">
+        <p class="text-base md:text-lg p-3">{{__('Selected task lists')}}:</p>
+        <!-- Dropdown -->
+        <div x-data="{ open: false }" class="relative">
+            <button x-on:click="open = true"
+                    class="flex flex-row items-center rounded-sm md:text-lg overflow-hidden focus:outline-none border border-gray-200 py-1 px-3">
+                <p x-text="activeTab.text"></p>
+                <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <!-- Dropdown Body -->
+            <div x-show.transition="open" x-on:click.away="open = false"
+                 class="absolute left-0 w-40 mt-2 py-2 z-50 bg-white border rounded shadow-xl">
+                <div class="flex flex-col gap-y-1">
 
-    {{--The tasks--}}
-    <div class="flex flex-col xl:grid xl:grid-flow-row xl:grid-cols-3 xl:gap-5 p-3 xl:py-6"
+                    <template x-for="tab in tabs" :key="tab.id">
+                        <a x-text="tab.text" @click="activeTab = tab; $wire.emit('tabChanged', tab.type); open = false;"
+                           :class="{'text-blue-500': activeTab.type === tab.type}" class="md:text-lg transition-colors duration-200 block px-4 py-2 text-normal text-gray-900 rounded hover:bg-blue-500 hover:text-white"></a>
+                    </template>
+                </div>
+            </div>
+            <!-- // Dropdown Body -->
+        </div>
+        <!-- // Dropdown -->
+    </div>
+    {{--The task lists--}}
+    <div
+        class="flex flex-col lg:grid lg:grid-flow-row lg:grid-cols-3 lg:gap-5 p-3 lg:py-6"
          x-data="{todos: @entangle('todoList')}">
         <template x-for="list in todos" :key="list['id']">
             <div
-                class="flex md:flex-col lg:flex-row xl:flex-col xl:flex-1 shadow-sm xl:rounded-lg xl:shadow-xl border-l-4 xl:bg-white"
+                class="flex flex-col shadow-sm border-l-4 lg:flex-col lg:flex-1 lg:rounded-lg lg:shadow-xl lg:bg-white"
                 :class="{'border-green-600': checkTaskStatus(list, 'Finished'),
                 'border-blue-400': checkTaskStatus(list, 'Started'),
                 'border-red-600': checkTaskStatus(list, 'Expired'),
                 'border-yellow-400': checkTaskStatus(list, 'Prioritized')}">
-                <div class="flex flex-col w-3/4 md:w-full lg:w-4/5 xl:w-full gap-y-1 p-3 md:p-5  xl:h-48">
-                    <p x-show="list['deleted_at'] == null" x-text="list['status'].status" class="text-sm text-gray-400"></p>
-
-                    <p x-show="list['steps'].length > 0 && list['status'].status != 'Finished' " class="text-gray-400 text-sm hidden xl:block"
+                <div class="flex flex-col w-full lg:w-full gap-y-1 p-3 md:p-5  lg:h-48">
+                    <p x-show="list['deleted_at'] == null" x-text="list['status'].status"
+                       class="text-sm text-gray-400"></p>
+                    <p x-show="list['steps'].length > 0 && list['status'].status != 'Finished' "
+                       class="text-gray-400 text-sm hidden lg:block"
                        x-text="'{{__('Additional steps')}}: ' + list['steps'].length"></p>
-                    <h1 class="text-lg md:text-xl lg:text-lg xl:text-xl font-semibold text-gray-700 truncate"
+                    <a class="text-lg md:text-xl lg:text-lg xl:text-xl font-semibold text-gray-700 truncate"
                         :class="{'line-through text-gray-300': list['deleted_at'] != null}"
-                        x-text="list['title']"></h1>
-                    <p x-show="list['steps'].length > 0" class="text-gray-400 text-sm md:text-base xl:hidden"
+                        x-text="list['title']" :href="'/task/'+list['id']"></a>
+                    <p x-show="list['steps'].length > 0" class="text-gray-400 text-sm md:text-base lg:hidden"
                        x-text="'{{__('Additional steps')}}: ' + list['steps'].length">{</p>
-                    <p class="text-gray-400 text-sm md:text-base overflow-hidden" x-text="list['description']"
+                    <p class="flex-1 text-gray-400 text-sm md:text-base overflow-hidden" x-text="list['description']"
                        :class="{'line-through text-gray-300': list['deleted_at'] != null}"></p>
                 </div>
-                <div x-show="list['deleted_at'] == null"
-                     class="flex flex-col md:flex-row lg:h-12 lg:my-auto py-3 xl:mx-auto xl:w-full gap-y-3 md:gap-3 justify-center w-1/4 md:w-full lg:w-1/5 pr-2 md:px-3 md:pb-3">
+                <div x-show="list['deleted_at'] == null" class="flex gap-1 p-1">
                     <button @click="$wire.showTask(list['id'])"
-                            class="px-3 md:w-full rounded-full bg-blue-200 hover:bg-blue-300">{{__('Display')}}</button>
-                    <button @click="$wire.destroyTask(list['id'], activeTab)"
-                            class="px-3 md:w-full rounded-full bg-red-400 hover:bg-red-500">{{__('Delete')}}</button>
+                            class="flex-1 px-3 md:w-full rounded bg-blue-200 hover:bg-blue-300">{{__('Edit')}}</button>
+                    <button @click="$wire.destroyTask(list['id'], activeTab.type)"
+                            class="flex-1 px-3 md:w-full rounded bg-red-400 hover:bg-red-500">{{__('Delete')}}</button>
                 </div>
-                <div x-show="list['deleted_at'] != null"
-                     class="flex flex-col md:flex-row lg:h-12 lg:my-auto py-3 xl:mx-auto xl:w-full gap-y-3 md:gap-3 justify-center w-1/4 md:w-full lg:w-1/5 pr-2 md:px-3 md:pb-3">
-                    <button @click="$wire.emit('restoreTask', list['id'], activeTab)"
-                            class="px-3 md:w-full rounded-full bg-green-200 hover:bg-green-300">{{__('Restore')}}</button>
-                    <button @click="$wire.forceDestroyTask(list['id'], activeTab)"
-                            class="px-3 md:w-full rounded-full bg-red-400 hover:bg-red-500 text-sm">{{__('Delete permanently')}}</button>
+                <div x-show="list['deleted_at'] != null" class="flex gap-1 p-1">
+                    <button @click="$wire.emit('restoreTask', list['id'], activeTab.type)"
+                            class="flex-1 px-3 md:w-full rounded bg-green-100 hover:bg-green-200">{{__('Restore')}}</button>
+                    <button @click="$wire.forceDestroyTask(list['id'], activeTab.type)"
+                            class="flex-1 px-3 md:w-full rounded bg-red-200 hover:bg-red-300 text-sm">{{__('Delete permanently')}}</button>
                 </div>
             </div>
         </template>
         <div
             class="text-center text-gray-400 p-3 xl:hidden">{{$todoListCount > 0 ? ($todoListCount > 1 ? $todoListCount . ' '. __('task lists'): $todoListCount.' '. __('task list')): 'No task lists'}}</div>
     </div>
-
     {{--The create new task modal--}}
     <x-jet-dialog-modal wire:model="newTaskModal">
         <x-slot name="title">{{__('Create new task')}}</x-slot>
@@ -124,25 +141,54 @@
 
         function tabs() {
             return {
-                activeTab: 'active',
+                activeTab: {
+                    'id': 1,
+                    'title': '{{__('Your active task lists')}}',
+                    'text': '{{__('Active')}}',
+                    'type': 'active'
+                },
                 tabs: [
                     {
                         'id': 0,
-                        'title': '{{__('Your active tasks')}}',
-                        'text': '{{__('Active tasks')}}',
-                        'type': 'active'
+                        'title': '{{__('Your all task lists')}}',
+                        'text': '{{__('All')}}',
+                        'type': 'All'
                     },
                     {
                         'id': 1,
-                        'title': '{{__('Your all tasks')}}',
-                        'text': '{{__('All tasks')}}',
-                        'type': 'all'
+                        'title': '{{__('Your active task lists')}}',
+                        'text': '{{__('Active')}}',
+                        'type': 'Active'
+                    },
+                    {
+                        'id': 3,
+                        'title': '{{__('Finished task lists')}}',
+                        'text': '{{__('Finished')}}',
+                        'type': 'Finished'
+                    },
+                    {
+                        'id': 4,
+                        'title': '{{__('Prioritized task lists')}}',
+                        'text': '{{__('Prioritized')}}',
+                        'type': 'Prioritized'
+                    },
+                    {
+                        'id': 5,
+                        'title': '{{__('Started task lists')}}',
+                        'text': '{{__('Started')}}',
+                        'type': 'Started'
+                    },
+                    {
+                        'id': 6,
+                        'title': '{{__('Expired task lists')}}',
+                        'text': '{{__('Expired')}}',
+                        'type': 'Expired'
                     },
                     {
                         'id': 2,
-                        'title': '{{__('Your deleted tasks')}}',
-                        'text': '{{__('Deleted tasks')}}',
-                        'type': 'deleted'
+                        'title': '{{__('Your deleted task lists')}}',
+                        'text': '{{__('Deleted')}}',
+                        'type': 'Deleted'
                     }
 
                 ]

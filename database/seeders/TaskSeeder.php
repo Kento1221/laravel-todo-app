@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\TaskList;
 use App\Models\User;
 use Faker\Factory;
 use Illuminate\Database\Seeder;
@@ -24,17 +25,16 @@ class TaskSeeder extends Seeder
     {
         $tasks = [];
 
-        $users_id = User::all()->pluck('id');
+        $user_ids = User::all()->pluck('id');
 
-        foreach ($users_id as $user_id) {
+        foreach ($user_ids as $user_id) {
+            $task_list_ids = TaskList::where('user_id', $user_id)->get()->pluck('id')->toArray();
             for ($i = 0; $i < rand(1,5); $i++){
-                $temp_rand = rand(1, 4);
                 $tasks[] = [
                     'user_id' => $user_id,
+                    'task_list_id' => $task_list_ids[array_rand($task_list_ids)],
                     'title' =>$this->faker->sentence(),
-                    'description' => $this->faker->sentences(3, true),
-                    'status_id' => $temp_rand,
-                    'deadline' => $temp_rand === 4 ? now()->subDays(rand(1,6)) : null,
+                    'status_id' => rand(1, 4),
                 ];
             }
         }

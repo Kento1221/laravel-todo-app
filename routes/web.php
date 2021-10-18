@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', fn() => view('livewire.index'))->name('home');
 
 Route::get('/new-task', fn() => view('livewire.new-todo'));
+Route::get('/task/{task}', \App\Http\Livewire\ShowTask::class)->name('showTask');
 
 Route::group(['middleware' => ['auth:sanctum', 'verified']], function () {
     Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');

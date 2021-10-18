@@ -13,9 +13,9 @@ class Task extends Model
 
     protected $fillable=['title', 'description', 'deadline'];
 
-    public function user()
+    public function taskList()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(TaskList::class);
     }
 
     public function steps()
@@ -25,6 +25,6 @@ class Task extends Model
 
     public function status()
     {
-        return $this->belongsTo(TaskStatus::class);
+        return $this->belongsTo(Status::class);
     }
 }
