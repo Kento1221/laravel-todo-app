@@ -1,0 +1,71 @@
+version: "3.8"
+
+networks:
+    laravel:
+
+services:
+    php-apache:
+        container_name: php-apache
+        build:
+            context: ./resources/php
+        ports:
+            - '8080:80'
+        volumes:
+            - ./laravel-todo-app:/var/www/laravel-docker
+            - ./resources/apache/default.conf:/etc/apache2/sites-enabled/000-default.conf
+        depends_on:
+            - database
+        networks:
+            - laravel
+
+    node:
+        build:
+            context: ./resources/node
+            dockerfile: Dockerfile
+        container_name: node-js
+        ports:
+            - "3000:3000"
+        environment:
+            - PORT=3000
+        env_file:
+            - ./laravel-todo-app/.env
+        volumes:
+            - ./laravel-todo-app/package.json:/usr/app/package.json
+            - ./laravel-todo-app/:/usr/app/
+        networks:
+            - laravel
+
+    database:
+        image: mysql
+        container_name: database
+        restart: always
+        tty: true
+        environment:
+            MYSQL_DATABASE: todo_app
+            MYSQL_USER: homestead
+            MYSQL_PASSWORD: secret
+            MYSQL_ROOT_PASSWORD: root
+        volumes:
+            - database_volume:/var/lib/mysql
+        ports:
+            - '3306:3306'
+        networks:
+            - laravel
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin:latest
+        restart: always
+        container_name: phpmyadmin
+        ports:
+            - '8081:80'
+        depends_on:
+            - database
+        environment:
+            PMA_HOST: database
+            MYSQL_USERNAME: homestead
+            MYSQL_ROOT_PASSWORD: secret
+        networks:
+            - laravel
+
+volumes:
+    database_volume:
