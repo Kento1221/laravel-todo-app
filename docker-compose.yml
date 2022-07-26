@@ -41,9 +41,9 @@ services:
         restart: always
         tty: true
         environment:
-            MYSQL_DATABASE: todo_app
-            MYSQL_USER: homestead
-            MYSQL_PASSWORD: secret
+            MYSQL_DATABASE: axis
+            MYSQL_USER: axis
+            MYSQL_PASSWORD: axis
             MYSQL_ROOT_PASSWORD: root
         volumes:
             - database_volume:/var/lib/mysql
@@ -62,8 +62,8 @@ services:
             - database
         environment:
             PMA_HOST: database
-            MYSQL_USERNAME: homestead
-            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_USERNAME: axis
+            MYSQL_ROOT_PASSWORD: root
         networks:
             - laravel
 
